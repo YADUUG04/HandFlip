@@ -4,17 +4,6 @@ import time
 import math
 import csv
 import streamlit as st
-import numpy as np
-
-# Hiding Streamlit style
-hide_st_style = """
-            <style>
-            #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            header {visibility: hidden;}
-            </style>
-            """
-st.markdown(hide_st_style, unsafe_allow_html=True)
 
 # Initialize Mediapipe Hands
 mpHands = mp.solutions.hands
@@ -44,7 +33,6 @@ def main():
         flip_detected = False
         flip_count = 0
         flip_times = []  # List to store the timestamps of each flip
-        angle_buffer = []
 
         # Create a placeholder for the image
         img_placeholder = st.empty()
@@ -75,16 +63,10 @@ def main():
 
                         # Calculate the angle of the direction vector
                         angle = calculate_angle(thumb_tip, index_tip)
-                        angle_buffer.append(angle)
-
-                        if len(angle_buffer) > 5:  # Use the last 5 angles for smoothing
-                            angle_buffer.pop(0)
-
-                        smoothed_angle = np.mean(angle_buffer)
 
                         # Detect hand flip based on angle change
                         if prev_hand_direction is not None:
-                            angle_change = abs(smoothed_angle - prev_hand_direction)
+                            angle_change = abs(angle - prev_hand_direction)
                             if angle_change > 90:  # You may need to adjust this threshold
                                 flip_detected = not flip_detected
                                 if flip_detected:
@@ -95,7 +77,7 @@ def main():
                                     st.write(f"Hand flip detected! Total flips: {flip_count}, Hand speed: {hand_speed:.2f} degrees/sec")
                                     prev_time = curr_time
 
-                        prev_hand_direction = smoothed_angle
+                        prev_hand_direction = angle
 
                         # Draw landmarks on the image
                         mpDraw.draw_landmarks(img, hand_landmark, mpHands.HAND_CONNECTIONS)
@@ -135,7 +117,7 @@ def main():
         # Add a download button for the CSV file
         st.download_button(
             label="Download Flip Times (CSV)",
-            data=open(csv_file_path, 'rb'),
+            data=open(csv_file_path, 'rb').read(),
             file_name="flip_times.csv",
             mime="text/csv"
         )
