@@ -4,6 +4,9 @@ import time
 import math
 import csv
 import streamlit as st
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+import tempfile
 
 # Initialize Mediapipe Hands
 mpHands = mp.solutions.hands
@@ -98,29 +101,36 @@ def main():
             average_time_between_flips = None
             st.write("No flips detected, so average time cannot be calculated.")
 
-        # Save time between flips to CSV file
-        csv_file_path = 'flip_times.csv'
-        with open(csv_file_path, 'w', newline='') as csvfile:
-            fieldnames = ['Flip Number', 'Time Between Flips (seconds)']
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        # Generate PDF report
+        generate_pdf_report(flip_count, time_between_flips, average_time_between_flips)
 
-            writer.writeheader()
-            for i, time_between_flip in enumerate(time_between_flips, start=1):
-                writer.writerow({'Flip Number': i, 'Time Between Flips (seconds)': time_between_flip})
+def generate_pdf_report(flip_count, time_between_flips, average_time_between_flips):
+    pdf_file_path = 'hand_flip_report.pdf'
+    c = canvas.Canvas(pdf_file_path, pagesize=letter)
 
-            # Write the average time between flips to the CSV file
-            if average_time_between_flips is not None:
-                writer.writerow({'Flip Number': 'Average', 'Time Between Flips (seconds)': average_time_between_flips})
+    # Title and summary
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(200, 750, "Hand Flip Detection Report")
+    c.setFont("Helvetica", 12)
+    c.drawString(50, 700, f"Total Hand Flips: {flip_count}")
+    c.drawString(50, 680, f"Average Time Between Flips: {average_time_between_flips:.2f} seconds")
 
-        st.write("Flip times saved to CSV file:", csv_file_path)
+    # Detailed data
+    c.drawString(50, 640, "Detailed Data:")
+    y = 620
+    for i, time_between_flip in enumerate(time_between_flips, start=1):
+        c.drawString(50, y, f"Flip {i}: Time Between Flips = {time_between_flip:.2f} seconds")
+        y -= 20
 
-        # Add a download button for the CSV file
-        st.download_button(
-            label="Download Flip Times (CSV)",
-            data=open(csv_file_path, 'rb').read(),
-            file_name="flip_times.csv",
-            mime="text/csv"
-        )
+    c.save()
+
+    # Add a download button for the PDF report
+    st.download_button(
+        label="Download PDF Report",
+        data=open(pdf_file_path, 'rb').read(),
+        file_name="hand_flip_report.pdf",
+        mime="application/pdf"
+    )
 
 # Run the Streamlit app
 if __name__ == "__main__":
