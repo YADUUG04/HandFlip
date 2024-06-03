@@ -95,6 +95,14 @@ def main():
         time_between_flips = [flip_times[i] - flip_times[i-1] for i in range(1, len(flip_times))]
         st.write("Time between flips:", time_between_flips)
 
+        # Calculate and display the average time between flips
+        if time_between_flips:
+            average_time_between_flips = sum(time_between_flips) / len(time_between_flips)
+            st.write(f"Average Time Between Flips: {average_time_between_flips:.2f} seconds")
+        else:
+            average_time_between_flips = None
+            st.write("No flips detected, so average time cannot be calculated.")
+
         # Save time between flips to CSV file
         csv_file_path = 'flip_times.csv'
         with open(csv_file_path, 'w', newline='') as csvfile:
@@ -104,6 +112,10 @@ def main():
             writer.writeheader()
             for i, time_between_flip in enumerate(time_between_flips, start=1):
                 writer.writerow({'Flip Number': i, 'Time Between Flips (seconds)': time_between_flip})
+
+            # Write the average time between flips to the CSV file
+            if average_time_between_flips is not None:
+                writer.writerow({'Flip Number': 'Average', 'Time Between Flips (seconds)': average_time_between_flips})
 
         st.write("Flip times saved to CSV file:", csv_file_path)
 
