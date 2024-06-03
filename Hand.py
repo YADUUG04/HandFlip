@@ -4,8 +4,9 @@ import time
 import math
 import csv
 import streamlit as st
+import numpy as np
 
-# Hiding
+# Hiding Streamlit style
 hide_st_style = """
             <style>
             #MainMenu {visibility: hidden;}
@@ -17,7 +18,7 @@ st.markdown(hide_st_style, unsafe_allow_html=True)
 
 # Initialize Mediapipe Hands
 mpHands = mp.solutions.hands
-hands = mpHands.Hands(min_detection_confidence=0.2, min_tracking_confidence=0.2, max_num_hands=1)
+hands = mpHands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5, max_num_hands=1)
 mpDraw = mp.solutions.drawing_utils
 
 # Define a function to calculate the angle between two points
@@ -43,6 +44,7 @@ def main():
         flip_detected = False
         flip_count = 0
         flip_times = []  # List to store the timestamps of each flip
+        angle_buffer = []
 
         while cap.isOpened():
             success, img = cap.read()
@@ -70,10 +72,16 @@ def main():
 
                         # Calculate the angle of the direction vector
                         angle = calculate_angle(thumb_tip, index_tip)
+                        angle_buffer.append(angle)
+
+                        if len(angle_buffer) > 5:  # Use the last 5 angles for smoothing
+                            angle_buffer.pop(0)
+
+                        smoothed_angle = np.mean(angle_buffer)
 
                         # Detect hand flip based on angle change
                         if prev_hand_direction is not None:
-                            angle_change = abs(angle - prev_hand_direction)
+                            angle_change = abs(smoothed_angle - prev_hand_direction)
                             if angle_change > 90:  # You may need to adjust this threshold
                                 flip_detected = not flip_detected
                                 if flip_detected:
@@ -84,10 +92,12 @@ def main():
                                     st.write(f"Hand flip detected! Total flips: {flip_count}, Hand speed: {hand_speed:.2f} degrees/sec")
                                     prev_time = curr_time
 
-                        prev_hand_direction = angle
+                        prev_hand_direction = smoothed_angle
 
                         # Draw landmarks on the image
                         mpDraw.draw_landmarks(img, hand_landmark, mpHands.HAND_CONNECTIONS)
+
+            st.image(img, channels="BGR")
 
         cap.release()
 
