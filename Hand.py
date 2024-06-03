@@ -46,6 +46,9 @@ def main():
         flip_times = []  # List to store the timestamps of each flip
         angle_buffer = []
 
+        # Create a placeholder for the image
+        img_placeholder = st.empty()
+
         while cap.isOpened():
             success, img = cap.read()
             if not success:
@@ -97,7 +100,7 @@ def main():
                         # Draw landmarks on the image
                         mpDraw.draw_landmarks(img, hand_landmark, mpHands.HAND_CONNECTIONS)
 
-           
+            img_placeholder.image(img, channels="BGR")
 
         cap.release()
 
