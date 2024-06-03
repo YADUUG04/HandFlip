@@ -98,6 +98,7 @@ def main():
                         mpDraw.draw_landmarks(img, hand_landmark, mpHands.HAND_CONNECTIONS)
 
             st.image(img, channels="BGR")
+                    break;
 
         cap.release()
 
