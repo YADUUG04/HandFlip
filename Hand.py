@@ -52,7 +52,7 @@ def main():
         while cap.isOpened():
             success, img = cap.read()
             if not success:
-                st.warning("Error reading frame.")
+                st.warning("Finished processing the video or encountered an error.")
                 break
 
             imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
