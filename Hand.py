@@ -5,6 +5,16 @@ import math
 import csv
 import streamlit as st
 
+# Hiding Streamlit style
+hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_html=True)
+
 # Initialize Mediapipe Hands
 mpHands = mp.solutions.hands
 hands = mpHands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5, max_num_hands=1)
