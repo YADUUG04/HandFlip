@@ -24,7 +24,13 @@ mpDraw = mp.solutions.drawing_utils
 def calculate_angle(point1, point2):
     return math.degrees(math.atan2(point2[1] - point1[1], point2[0] - point1[0]))
 
-# Define Streamlit app
+# Authentication function
+def authenticate(username, password):
+    # Placeholder for authentication logic
+    # In practice, use a secure method to verify credentials
+    return username == "admin" and password == "password"
+
+# Define the main Streamlit app
 def main():
     st.title("Hand Flip Detection")
 
@@ -132,6 +138,20 @@ def main():
             mime="text/csv"
         )
 
-# Run the Streamlit app
+# Run the Streamlit app with authentication
 if __name__ == "__main__":
-    main()
+    if 'authenticated' not in st.session_state:
+        st.session_state['authenticated'] = False
+
+    if st.session_state['authenticated']:
+        main()
+    else:
+        st.title("Login")
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+        if st.button("Login"):
+            if authenticate(username, password):
+                st.session_state['authenticated'] = True
+                st.experimental_rerun()
+            else:
+                st.error("Invalid username or password")
